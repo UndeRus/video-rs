@@ -380,12 +380,13 @@ impl Drop for Encoder {
 }
 
 /// Holds a logical combination of encoder settings.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Settings {
     width: u32,
     height: u32,
     pixel_format: AvPixel,
     options: Options,
+    codec: Option<AvCodec>,
 }
 
 impl Settings {
@@ -408,6 +409,7 @@ impl Settings {
             height: height as u32,
             pixel_format: AvPixel::YUV420P,
             options,
+            codec: Settings::libx264_codec(),
         }
     }
 
@@ -436,6 +438,21 @@ impl Settings {
             height: height as u32,
             pixel_format,
             options,
+            codec: Settings::libx264_codec(),
+        }
+    }
+
+    /// Create encoder settings for an JPEG image
+    pub fn preset_jpeg_custom(
+        width: usize,
+        height: usize,
+    ) -> Settings {
+        Self {
+            width: width as u32,
+            height: height as u32,
+            pixel_format: ffmpeg::format::Pixel::YUVJ420P,
+            options:  Options::preset_jpeg(),
+            codec: Settings::jpeg_codec(),
         }
     }
 
@@ -459,9 +476,30 @@ impl Settings {
     fn codec(&self) -> Option<AvCodec> {
         // Try to use the libx264 decoder. If it is not available, then use use whatever default
         // h264 decoder we have.
+        /*
         Some(
             ffmpeg::encoder::find_by_name("libx264")
                 .unwrap_or(ffmpeg::encoder::find(AvCodecId::H264)?),
+        )
+        */
+        self.codec
+    }
+
+    fn libx264_codec() -> Option<AvCodec> {
+        // Try to use the libx264 decoder. If it is not available, then use use whatever default
+        // h264 decoder we have.
+        Some(
+            ffmpeg::encoder::find_by_name("libx264")
+                .unwrap_or(ffmpeg::encoder::find(AvCodecId::H264)?),
+        )
+    }
+
+    fn jpeg_codec() -> Option<AvCodec> {
+        // Try to use the libx264 decoder. If it is not available, then use use whatever default
+        // h264 decoder we have.
+        Some(
+            ffmpeg::encoder::find_by_name("jpeg")
+                .unwrap_or(ffmpeg::encoder::find(AvCodecId::MJPEG)?),
         )
     }
 

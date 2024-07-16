@@ -74,6 +74,12 @@ impl Options {
         Self(opts)
     }
 
+    /// Options for a JPEG encoder
+    pub fn preset_jpeg() -> Self {
+        let mut opts = AvDictionary::new();
+        Self(opts)
+    }
+
     /// Convert back to ffmpeg native dictionary, which can be used with `ffmpeg_next` functions.
     pub(super) fn to_dict(&self) -> AvDictionary {
         self.0.clone()
